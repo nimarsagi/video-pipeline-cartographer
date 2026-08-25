@@ -1,0 +1,431 @@
+<title>Map of content-editor</title>
+<style>
+  :root {
+    --bg: #faf9f6;
+    --panel: #ffffff;
+    --ink: #1a1a1a;
+    --muted: #6b6b6b;
+    --line: #e2ded6;
+    --accent: #205c9c;
+    --ok: #1a7a3c;
+    --ok-bg: #e8f5ec;
+    --ghost: #b3261e;
+    --ghost-bg: #fbeae9;
+    --left: #8a5a00;
+    --left-bg: #fdf3e0;
+    --note: #5a5a5a;
+    --note-bg: #efedea;
+    --code-bg: #f0eee9;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #191919;
+      --panel: #222222;
+      --ink: #e8e6e1;
+      --muted: #9a9791;
+      --line: #3a3833;
+      --accent: #7ab0e8;
+      --ok: #6fce8f;
+      --ok-bg: #1e3326;
+      --ghost: #f0847c;
+      --ghost-bg: #3d211f;
+      --left: #e0b45c;
+      --left-bg: #3a2f1a;
+      --note: #b0ada7;
+      --note-bg: #2c2b28;
+      --code-bg: #2e2c28;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font: 16px/1.55 Charter, Georgia, serif;
+  }
+  main { max-width: 880px; margin: 0 auto; padding: 2.5rem 1.25rem 5rem; }
+  h1 { font-size: 1.9rem; margin: 0 0 .3rem; }
+  h2 { font-size: 1.35rem; margin: 3rem 0 .8rem; border-bottom: 2px solid var(--line); padding-bottom: .35rem; }
+  h3 { font-size: 1.05rem; margin: 1.6rem 0 .5rem; }
+  p { margin: .6rem 0; }
+  code, .path {
+    font: .85em/1.4 ui-monospace, "SF Mono", Menlo, monospace;
+    background: var(--code-bg);
+    padding: .1em .35em;
+    border-radius: 4px;
+    white-space: nowrap;
+  }
+  .sub { color: var(--muted); font-size: .92rem; }
+  .rule-box {
+    background: var(--note-bg);
+    border-left: 4px solid var(--accent);
+    padding: .7rem 1rem;
+    margin: 1.2rem 0;
+    border-radius: 0 6px 6px 0;
+  }
+
+  /* glossary */
+  .gloss { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: .8rem; margin: 1.2rem 0; }
+  .gloss div {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: .8rem 1rem;
+  }
+  .gloss b { display: block; margin-bottom: .25rem; }
+  .gloss .where { display: block; margin-top: .45rem; color: var(--muted); font-size: .85rem; }
+
+  /* status pills */
+  .pill {
+    display: inline-block;
+    font: 600 .72rem/1 -apple-system, system-ui, sans-serif;
+    padding: .28em .6em;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+  .p-ok    { background: var(--ok-bg);    color: var(--ok); }
+  .p-ghost { background: var(--ghost-bg); color: var(--ghost); }
+  .p-left  { background: var(--left-bg);  color: var(--left); }
+  .p-note  { background: var(--note-bg);  color: var(--note); }
+
+  /* catalog */
+  .filters { display: flex; flex-wrap: wrap; gap: .4rem; margin: 1rem 0 .8rem; }
+  .filters button {
+    font: 600 .8rem/1 -apple-system, system-ui, sans-serif;
+    padding: .45em .85em;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    background: var(--panel);
+    color: var(--ink);
+    cursor: pointer;
+  }
+  .filters button.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; }
+  table { border-collapse: collapse; width: 100%; background: var(--panel); font-size: .92rem; }
+  th, td { text-align: left; padding: .5rem .75rem; border-top: 1px solid var(--line); vertical-align: top; }
+  thead th {
+    border-top: none;
+    font: 600 .78rem/1.3 -apple-system, system-ui, sans-serif;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    color: var(--muted);
+  }
+  tbody tr.hid { display: none; }
+  td a { color: var(--accent); }
+  .count { color: var(--muted); font-size: .85rem; margin-left: .5rem; }
+
+  /* cards */
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-left: 5px solid var(--accent);
+    border-radius: 8px;
+    padding: 1.1rem 1.3rem;
+    margin: 1.4rem 0;
+  }
+  .card.ghostcard { border-left-color: var(--ghost); }
+  .card.changecard { border-left-color: var(--left); }
+  .card h3 { margin-top: 0; }
+  .card .kind { float: right; margin-left: .8rem; }
+  .card table { border: 1px solid var(--line); border-radius: 6px; font-size: .88rem; }
+  .qa b { display: block; margin-top: .9rem; font-size: .82rem; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); font-family: -apple-system, system-ui, sans-serif; }
+
+  /* pipeline */
+  .pipe { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 1rem 1.2rem; overflow-x: auto; }
+  .pipe pre { margin: 0; font: .85rem/1.7 ui-monospace, "SF Mono", Menlo, monospace; }
+  .pipe .dim { color: var(--muted); }
+
+  .flag { border-left: 4px solid var(--left); background: var(--left-bg); padding: .6rem 1rem; border-radius: 0 6px 6px 0; margin: 1rem 0; font-size: .92rem; }
+
+  nav.toc { font-family: -apple-system, system-ui, sans-serif; font-size: .88rem; margin: 1.2rem 0 0; }
+  nav.toc a { color: var(--accent); text-decoration: none; margin-right: 1.1rem; }
+  nav.toc a:hover { text-decoration: underline; }
+</style>
+
+<main>
+<h1>The map of content-editor</h1>
+<p class="sub">Checked 2026-08-24, from the files on disk. Every claim names a file and line — if the file disagrees, the file is right and this page is wrong. All paths are inside <code>content-editor/</code>.</p>
+
+<nav class="toc">
+  <a href="#words">The words</a>
+  <a href="#walk">The walk</a>
+  <a href="#catalog">Catalog</a>
+  <a href="#cards">Cards</a>
+  <a href="#kinds">The eight kinds</a>
+  <a href="#collisions">Collisions</a>
+</nav>
+
+<h2 id="words">The words this map uses</h2>
+<p>Six words, then everything below makes sense.</p>
+<div class="gloss">
+  <div><b>Catalog</b>
+    One line per thing worth naming in the repo — its kind, whether anything reads it, and whether it has a card. The full list, no explanations.
+    <span class="where">Sits in §1 of <code>examples.md</code> · rendered below</span></div>
+  <div><b>Card</b>
+    A write-up of one thing: what it is, why it's built that way, what else changes if you touch it, and what looks like it changes but doesn't. The catalog names everything; a card explains one thing.
+    <span class="where">Sits in §2–§4 of <code>examples.md</code> · rendered below</span></div>
+  <div><b>Noun card</b>
+    A card about a <em>thing</em> — a script, a file, a setting. This map has three: <code>caption.py</code>, <code>01-transcript.json</code>, <code>tools/measure_audio.py</code>.
+    <span class="where">§2 of <code>examples.md</code></span></div>
+  <div><b>Ghost</b> <span class="pill p-ghost">unused, looks used</span>
+    Something nothing reads, while everything around it says it's in charge. The dangerous kind: you change it expecting an effect, or you trust it and delete the code that does the real work. Here: <code>caption_motion</code> and twelve settings beside it.
+    <span class="where">§3 of <code>examples.md</code> · red rows in the catalog</span></div>
+  <div><b>Leftover</b> <span class="pill p-left">unused</span>
+    Something nothing reads, and nothing pretends otherwise. Honest clutter — safe to ignore, cheap to delete. Here: <code>reference/source-specs/</code>, <code>tools/render_smoke_test.py</code> (never run), <code>04-proposed-words.md</code> (never yet written).
+    <span class="where">Amber rows in the catalog</span></div>
+  <div><b>Change card</b>
+    A card about an <em>action</em> instead of a thing: one change you'd actually make, followed through everything it hits — and everything it looks like it hits but doesn't. This map has one: fixing a misheard word.
+    <span class="where">§4 of <code>examples.md</code></span></div>
+</div>
+<p class="sub">The closed list of the eight <em>kinds</em> a catalog row can be, the reading order, and the words that mean two things live in <code>reference/</code> next to <code>examples.md</code> — all three rendered at the bottom of this page.</p>
+
+<h2 id="walk">The walk — where to start with no question</h2>
+<div class="rule-box">If you <b>have</b> a question, don't walk: find the row in the catalog, open its one card, stop. This section is for arriving with no question yet.</div>
+<p>The front door is <code>caption.py</code> — one command, one video, six steps in a fixed order at <code>caption.py:45-52</code>. Everything else is a step in that run, a file the run passes along, a value a step reads, or prose about what a step may not do.</p>
+<div class="pipe"><pre>
+caption.py                       the run
+  → 01_ingest                    the video is read, then transcribed
+      01-video.md                path, length, frame rate — hand-editable
+      01-transcript.json         the words and their timings — <b>the file you edit</b>
+      01-transcript-raw.json     the same, written once, never touched again
+  → 01b_calibrate                the audio is evened out
+  → 02_assemble                  words become subtitle cards, plus an .srt
+  → 03_render                    the subtitles are burned on
+
+<span class="dim">off to the side:</span>  04_learn      run by hand after you fix a word
+<span class="dim">underneath:</span>       _config/edit-defaults.yaml — every stage reads it
+</pre></div>
+
+<h2 id="catalog">1 · The catalog</h2>
+<p>Everything worth naming, one line each. Filter by kind or status; rows with a <b>card</b> link to it below.</p>
+<div class="filters" id="kindf">
+  <button data-f="all" class="on">all kinds</button>
+  <button data-f="command">command</button>
+  <button data-f="stage">stage</button>
+  <button data-f="handover">handover file</button>
+  <button data-f="setting">setting</button>
+  <button data-f="shared">shared part</button>
+  <button data-f="check">check</button>
+  <button data-f="tally">running tally</button>
+  <button data-f="rule">written rule</button>
+</div>
+<div class="filters" id="statf">
+  <button data-f="all" class="on">any status</button>
+  <button data-f="ok">in use</button>
+  <button data-f="ghost">ghosts</button>
+  <button data-f="left">leftovers</button>
+  <button data-f="note">caveats</button>
+</div>
+<div class="tablewrap">
+<table id="cat">
+<thead><tr><th>Thing</th><th>Kind</th><th>Status</th><th>Card</th></tr></thead>
+<tbody>
+<tr data-k="command" data-s="ok"><td><code>caption.py</code></td><td>command</td><td><span class="pill p-ok">in use</span></td><td><a href="#card-caption">§2</a> — <b>start here</b></td></tr>
+<tr data-k="stage" data-s="ok"><td><code>stages/01_ingest</code></td><td>stage</td><td><span class="pill p-ok">in use</span></td><td>—</td></tr>
+<tr data-k="stage" data-s="ok note"><td><code>stages/01b_calibrate</code></td><td>stage</td><td><span class="pill p-ok">in use</span> <span class="pill p-note">never saved into git</span></td><td>—</td></tr>
+<tr data-k="stage" data-s="ok"><td><code>stages/02_assemble</code></td><td>stage</td><td><span class="pill p-ok">in use</span></td><td>—</td></tr>
+<tr data-k="stage" data-s="ok"><td><code>stages/03_render</code></td><td>stage</td><td><span class="pill p-ok">in use</span></td><td>—</td></tr>
+<tr data-k="stage" data-s="ok note"><td><code>stages/04_learn</code></td><td>stage</td><td><span class="pill p-note">you run it by hand</span></td><td>—</td></tr>
+<tr data-k="handover" data-s="ok"><td><code>01-topic.md</code></td><td>handover file</td><td><span class="pill p-ok">in use</span></td><td>—</td></tr>
+<tr data-k="handover" data-s="ok"><td><code>01-video.md</code></td><td>handover file</td><td><span class="pill p-ok">in use</span></td><td>—</td></tr>
+<tr data-k="handover" data-s="ok"><td><code>01-transcript.json</code></td><td>handover file</td><td><span class="pill p-ok">in use</span></td><td><a href="#card-transcript">§2</a></td></tr>
+<tr data-k="handover" data-s="ok"><td><code>01-transcript-raw.json</code></td><td>handover file</td><td><span class="pill p-ok">in use</span></td><td>—</td></tr>
+<tr data-k="handover" data-s="ok"><td><code>02-caption-cards.json</code></td><td>handover file</td><td><span class="pill p-ok">in use</span></td><td>—</td></tr>
+<tr data-k="handover" data-s="note"><td><code>02-captions.srt</code></td><td>handover file</td><td><span class="pill p-note">the file you keep; no later step reads it</span></td><td>—</td></tr>
+<tr data-k="handover" data-s="ok"><td><code>03-remotion-props.json</code></td><td>handover file</td><td><span class="pill p-ok">in use</span></td><td>—</td></tr>
+<tr data-k="handover" data-s="left"><td><code>04-proposed-words.md</code></td><td>handover file</td><td><span class="pill p-left">never yet written</span></td><td>—</td></tr>
+<tr data-k="setting" data-s="ok"><td><code>_config/edit-defaults.yaml</code></td><td>setting</td><td><span class="pill p-ok">in use</span></td><td>—</td></tr>
+<tr data-k="setting" data-s="ghost"><td><code>caption_motion</code></td><td>setting</td><td><span class="pill p-ghost">ghost — unused, looks used</span></td><td><a href="#card-motion">§3</a></td></tr>
+<tr data-k="setting" data-s="ghost"><td>twelve more settings nothing reads</td><td>setting</td><td><span class="pill p-ghost">ghosts — unused, look used</span></td><td><a href="#card-motion">§3</a></td></tr>
+<tr data-k="setting" data-s="ok"><td><code>_config/paths.yaml</code></td><td>setting</td><td><span class="pill p-ok">in use</span></td><td>—</td></tr>
+<tr data-k="setting" data-s="ok"><td><code>_config/lexicon.txt</code></td><td>setting</td><td><span class="pill p-ok">in use</span></td><td>—</td></tr>
+<tr data-k="setting" data-s="ok note"><td><code>memory/preferences.md</code></td><td>setting</td><td><span class="pill p-ok">in use</span> <span class="pill p-note">currently empty</span></td><td>—</td></tr>
+<tr data-k="shared" data-s="ok"><td><code>pipeline_lib.py</code></td><td>shared part</td><td><span class="pill p-ok">in use</span></td><td>—</td></tr>
+<tr data-k="shared" data-s="ok"><td><code>tools/measure_audio.py</code></td><td>shared part</td><td><span class="pill p-ok">in use</span></td><td><a href="#card-measure">§2</a></td></tr>
+<tr data-k="shared" data-s="ok"><td><code>remotion/</code></td><td>shared part</td><td><span class="pill p-ok">in use</span></td><td>—</td></tr>
+<tr data-k="check" data-s="ok"><td><code>tools/sync.py</code> + <code>.claude/hooks/after-edit.py</code></td><td>check</td><td><span class="pill p-ok">in use</span></td><td>—</td></tr>
+<tr data-k="check" data-s="ok"><td><code>tools/run_fixture_checks.py</code></td><td>check</td><td><span class="pill p-ok">in use</span></td><td>—</td></tr>
+<tr data-k="check" data-s="ok"><td><code>tools/make_fixture.py</code>, <code>make_fixture_video.py</code></td><td>check</td><td><span class="pill p-ok">in use</span></td><td>—</td></tr>
+<tr data-k="check" data-s="left"><td><code>tools/render_smoke_test.py</code></td><td>check</td><td><span class="pill p-left">leftover — never run</span></td><td>—</td></tr>
+<tr data-k="tally" data-s="ok note"><td><code>memory/caption-fixes.md</code></td><td>running tally</td><td><span class="pill p-ok">in use</span> <span class="pill p-note">empty</span></td><td>—</td></tr>
+<tr data-k="tally" data-s="ok"><td><code>memory/boundary-tally.md</code></td><td>running tally</td><td><span class="pill p-ok">in use</span></td><td>—</td></tr>
+<tr data-k="rule" data-s="ok"><td><code>CLAUDE.md</code>, <code>CONTEXT.md</code>, <code>identity.md</code>, <code>governance.md</code></td><td>written rule</td><td><span class="pill p-ok">in use</span></td><td>—</td></tr>
+<tr data-k="rule" data-s="ok"><td>each stage's <code>CONTEXT.md</code></td><td>written rule</td><td><span class="pill p-ok">in use</span></td><td>—</td></tr>
+<tr data-k="rule" data-s="ok"><td><code>reference/terminology.md</code></td><td>written rule</td><td><span class="pill p-ok">in use</span></td><td>—</td></tr>
+<tr data-k="rule" data-s="note"><td><code>BUILD-NOTES.md</code></td><td>written rule</td><td><span class="pill p-note">its “NOT verified” list is out of date</span></td><td>—</td></tr>
+<tr data-k="rule" data-s="left"><td><code>reference/source-specs/</code></td><td>written rule</td><td><span class="pill p-left">leftover — record of where the numbers came from; <code>CONTEXT.md:59</code> says no script opens it</span></td><td>—</td></tr>
+</tbody>
+</table>
+</div>
+<p class="count" id="rowcount"></p>
+<p class="sub">A dash means nobody has written that card yet.</p>
+
+<h2 id="cards">2 · The noun cards</h2>
+<p>Each card answers the same four questions. The last one — <em>what looks like it changes and doesn't</em> — is the reason the card exists.</p>
+
+<div class="card" id="card-caption">
+  <span class="pill p-note kind">command</span>
+  <h3><code>caption.py</code> — the one command that runs everything</h3>
+  <div class="qa">
+  <b>What it is</b>
+  <p>Runs six steps over one video, in a fixed order, at <code>:45-52</code>. Everything else in the repo is one of those steps, a file passed between them, a value a step reads, or a rule about what a step may not do.</p>
+  <b>Why it's built this way</b>
+  <p><code>--redo</code> lets you fix a misheard word without transcribing again — transcribing again would just bring back the same wrong word. So it re-runs the list from step 3 on. But the 3 is typed by hand at <code>:66</code>; the comment at <code>:54-65</code> shows someone moved it from 2 to 3 when the audio step was added.</p>
+  <b>What else changes</b>
+  <p>The order of a run — <code>:45-52</code> is the only place it lives. And <code>--redo</code>, in a way you wouldn't expect: add a step above position 3 and the 3 stays put, so the rebuild starts in the wrong place with no warning. Also the after-edit checks — <code>tools/sync.py:32</code> names this file by name.</p>
+  <b>What looks like it changes and doesn't</b>
+  <p><code>CONTEXT.md</code>. It holds the diagram of which stage runs when, and <code>CLAUDE.md:57-61</code> sends you there before any change — but nothing opens it. Change the steps and the diagram goes quietly wrong until someone notices.</p>
+  </div>
+</div>
+
+<div class="card" id="card-transcript">
+  <span class="pill p-note kind">handover file</span>
+  <h3><code>01-transcript.json</code> — the words, and the file you edit</h3>
+  <div class="qa">
+  <b>What it is</b>
+  <p>Every word said, with start and end times, plus the video's path, length, and frame rate. Written by <code>transcribe.py:136</code> to <code>output/runs/[slug]/</code>. When a word comes out wrong, this is the file you fix.</p>
+  <b>Why it's built this way</b>
+  <p>Two non-obvious things. It's written twice: <code>01-transcript-raw.json</code> is a copy made once (<code>transcribe.py:140-147</code>) and never touched again — not a backup, but the only record of what was originally heard, which is how <code>learn_words.py</code> spots your corrections. And its <code>"video"</code> line is overwritten mid-run to point at the evened-out audio copy (<code>calibrate_audio.py:195</code>) — which is why the audio stage reads <code>01-video.md</code> instead (<code>calibrate_audio.py:12-17</code>).</p>
+  <b>What else changes</b>
+  <p><code>02-caption-cards.json</code> and <code>02-captions.srt</code>, both rebuilt from it. <code>03-remotion-props.json</code> and the finished video — the render takes length, frame rate, and path from here instead of reopening the video (<code>render_captions.py:44-52</code>). And the audio stage, since sound levels are measured over speech.</p>
+  <b>What looks like it changes and doesn't</b>
+  <p><code>01-transcript-raw.json</code>. Same folder, almost the same name, same shape — the obvious file to reach for, and the wrong one. Overwrite it and every correction stops looking like a correction: nothing breaks out loud, the word list just quietly stops growing (<code>governance.md</code>, rule 3).</p>
+  </div>
+</div>
+
+<div class="card" id="card-measure">
+  <span class="pill p-note kind">shared part</span>
+  <h3><code>tools/measure_audio.py</code> — needed by every run, filed under “not part of a run”</h3>
+  <div class="qa">
+  <b>What it is</b>
+  <p>Measures the sound: loudness moment by moment, and where someone is speaking. Sits in <code>tools/</code>, runs on every video, used at <code>measure.py:41</code>.</p>
+  <b>Why it's built this way</b>
+  <p>First written to produce the numbers in <code>reference/source-specs/audio-measurements.md</code>. The audio stage reused it rather than measuring the same thing a second way (<code>measure.py:18-23</code>) — two versions of one measurement would drift apart. Side effect: the repo's own description of itself is wrong here. <code>CLAUDE.md:94-95</code> skips this file; <code>BUILD-NOTES.md:122</code> says of <code>tools/</code>, “None of them is part of a run.”</p>
+  <b>What else changes</b>
+  <p>Every run — break it and a run stops at the audio step. Also <code>audio-measurements.md</code>, since every number in it came from this script.</p>
+  <b>What looks like it changes and doesn't</b>
+  <p>The checks in <code>tools/sync.py</code>. It watches <code>stages</code>, <code>_config</code>, and <code>memory</code>, plus two files by name (<code>:31-33</code>) — not <code>tools/</code>. The one file in <code>tools/</code> a run depends on is the one file the check was never told about.</p>
+  </div>
+</div>
+
+<h2 id="ghost">3 · The ghost</h2>
+
+<div class="card ghostcard" id="card-motion">
+  <span class="pill p-ghost kind">ghost — setting</span>
+  <h3><code>caption_motion</code> — a setting nothing reads</h3>
+  <div class="qa">
+  <b>What it is</b>
+  <p><code>caption_motion: none</code> at <code>edit-defaults.yaml:33</code> means subtitles don't pop, light up word by word, or type themselves on. That's genuinely how they behave — but nothing reads the setting to make it happen. It's one of thirteen settings in that file read by nothing:</p>
+  <p class="sub"><code>gap_between_cards_s</code> :31 · <code>lead_in_s</code> :32 · <code>caption_motion</code> :33 · <code>prefer_fewest_cards</code> :57 · <code>preserve_quotes</code> :61 · <code>anchor_semantics</code> :133 · <code>allow_serif</code> :184 · <code>hierarchy_via</code> :185 · <code>background_box</code> :195 · <code>subtitles_topmost</code> :197 · <code>render.resolution</code> :486 · <code>render.single_export_serves</code> :487 · <code>max_words_per_card</code> :507</p>
+  <p>Twelve sit under a heading called <code>rules:</code>, which says at <code>:9</code>: <em>“rules: enforced. A violation is a bug.”</em></p>
+  <b>Why it's built this way</b>
+  <p>The file was built by hand from two written specs, and every value they mentioned got copied in so nothing was lost. Good instinct — but it left values that record a <em>decision</em> in a file meant to hold what's <em>enforced</em>. The behavior lives elsewhere:</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Setting</th><th>Where the behavior actually is</th></tr></thead>
+    <tbody>
+    <tr><td><code>caption_motion</code></td><td><code>CaptionedVideo.tsx:14-19</code> — no <code>interpolate()</code> call anywhere in the file, so nothing can move unless someone adds it</td></tr>
+    <tr><td><code>subtitles_topmost</code></td><td>same file, <code>:23</code> and <code>:57-94</code> — subtitles are drawn last, which puts them on top</td></tr>
+    <tr><td><code>background_box</code></td><td>same file, <code>:83</code> — <code>background: "none"</code> is written into the code</td></tr>
+    <tr><td><code>gap_between_cards_s</code></td><td>subtitles are built end to end; <code>:27-29</code> depends on it</td></tr>
+    <tr><td><code>anchor_semantics</code></td><td><code>render_captions.py:160</code> and <code>CaptionedVideo.tsx:64</code> center the block; the setting describes what they do</td></tr>
+    <tr><td><code>render.resolution</code></td><td>a duplicate of <code>geometry.canvas</code> at <code>:112</code>, which <b>is</b> read, at <code>render_captions.py:203</code></td></tr>
+    </tbody>
+  </table></div>
+  <p><code>render.resolution</code> is the clearest case: set it to any size, the video still comes out 1080×1920. This setting was called <code>animation</code> until 2026-08-24, when “delete everything about animation” nearly took it out along with an unrelated project of the same name — see the collisions below.</p>
+  <b>What else changes</b>
+  <p><b>Nothing.</b> Change it, delete it, flip it — no run behaves differently. That's the finding, not a footnote. What it does affect is the next person, who'll believe the setting controls the behavior and may delete the code that actually does.</p>
+  <b>What looks like it changes and doesn't</b>
+  <p><code>CaptionedVideo.tsx</code> — the file that would animate subtitles if anything did; the values handed to it (<code>render_captions.py:210-233</code>) never include this setting. Also the <code>words_per_card</code> pair at <code>:506-507</code>: only the upper one is read, and only to print a count (<code>chunk_captions.py:385</code>). Neither caps anything — a 2.5-second limit already stops a subtitle at about eight words (<code>:504-505</code>).</p>
+  </div>
+</div>
+
+<div class="flag"><b>Unconfirmed, found 2026-08-26:</b> <code>allow_orphan_cards</code> at <code>edit-defaults.yaml:42</code> looks like a fourteenth — it sits under <code>rules:</code>, and no code reads the key. Not yet in the map; check it before trusting either count.</div>
+
+<h2 id="change">4 · The change card</h2>
+
+<div class="card changecard" id="card-change">
+  <span class="pill p-left kind">change card</span>
+  <h3>“A word came out wrong. I fixed it in <code>01-transcript.json</code>.”</h3>
+  <div class="qa">
+  <b>What it hits</b>
+  <div class="tablewrap"><table>
+    <thead><tr><th>What changes</th><th>Why</th></tr></thead>
+    <tbody>
+    <tr><td><code>02-caption-cards.json</code></td><td>rebuilt from the corrected words</td></tr>
+    <tr><td><code>02-captions.srt</code></td><td>rewritten from those</td></tr>
+    <tr><td><code>03-remotion-props.json</code></td><td>rebuilt, carrying the new text</td></tr>
+    <tr><td>the finished <code>.mp4</code></td><td>rendered again — the slow part</td></tr>
+    <tr><td><code>memory/caption-fixes.md</code></td><td><b>only if you then run <code>learn_words.py</code></b>, which no run calls</td></tr>
+    </tbody>
+  </table></div>
+  <b>What looks like it changes and doesn't</b>
+  <p>The evened-out audio in <code>output/audio/[slug]/</code>. Everyone reaches for it, for a good reason: the transcript's own <code>"video"</code> line points straight at it. It isn't touched — <code>caption.py:66</code> starts the rebuild at step 3, below the audio step; fixing a spelling can't change the audio, and re-running that slow step would produce an identical file (<code>caption.py:58-65</code>). Same for <code>01-transcript-raw.json</code>, per its card above.</p>
+  </div>
+</div>
+
+<h2 id="kinds">The eight kinds a row can be</h2>
+<p>The list is closed: a card names one of these, never a ninth invented on the spot. Each kind answers “what else changes?” differently — that's what makes it a kind and not a label. (<code>reference/card-types.md</code>)</p>
+<div class="tablewrap"><table>
+  <thead><tr><th>Kind</th><th>What it is</th><th>What changing one moves</th></tr></thead>
+  <tbody>
+  <tr><td><b>command</b></td><td>The one thing that decides what runs and in what order: <code>caption.py</code>. The only member — the only thing that <em>chooses</em> the work.</td><td>What runs, in what order, and which steps a rebuild skips.</td></tr>
+  <tr><td><b>stage</b></td><td>A numbered folder under <code>stages/</code>: a <code>CONTEXT.md</code> and its scripts. Takes named files, writes named files.</td><td>The files either side of it, and the step list at <code>caption.py:45-52</code>.</td></tr>
+  <tr><td><b>handover file</b></td><td>A file in <code>output/runs/[slug]/</code> one stage writes and another reads — or that leaves as something you keep. Most are also where a person edits by hand.</td><td>Every stage after the one that writes it.</td></tr>
+  <tr><td><b>setting</b></td><td>A named value in <code>_config/</code>, or an override in <code>memory/preferences.md</code>.</td><td>Whatever reads it — <b>or nothing at all</b>, which is worth checking before you trust one.</td></tr>
+  <tr><td><b>written rule</b></td><td>Writing that binds behaviour and that no code opens: <code>CLAUDE.md</code>, <code>governance.md</code>, the <code>CONTEXT.md</code>s, <code>terminology.md</code>.</td><td>Nothing runs differently. People and models behave differently — slower to notice, harder to undo.</td></tr>
+  <tr><td><b>shared part</b></td><td>Code more than one stage uses and no stage owns: <code>pipeline_lib.py</code>, <code>tools/measure_audio.py</code>, <code>remotion/</code>.</td><td>Every stage that reaches for it — and how far that reaches isn't visible from its folder.</td></tr>
+  <tr><td><b>check</b></td><td>Something that runs by itself and either stops you or reports: <code>sync.py</code>, the fixture checks, the after-edit hook.</td><td>What is allowed to break quietly. Weakening one changes nothing today.</td></tr>
+  <tr><td><b>running tally</b></td><td>A file that builds up across runs: <code>caption-fixes.md</code>, <code>boundary-tally.md</code>.</td><td><b>Nothing.</b> No run reads one to decide anything. Delete one and the count restarts — that's the whole effect.</td></tr>
+  </tbody>
+</table></div>
+<p><b>The two pairs that get confused.</b> A <b>setting</b> and a <b>running tally</b> both persist between runs but are opposites: a setting is read to decide something, a tally is written to remember something — find the line that reads it. A <b>written rule</b> and a <b>check</b> both stop bad changes: one by being read, one by failing. Only the check works on a reader who never opened it.</p>
+
+<h2 id="collisions">Words that mean two things here</h2>
+<p class="sub">Confirmed by the owner 2026-08-24. Full entries in <code>reference/collisions.md</code>; the repo keeps its own copy in <code>content-editor/reference/terminology.md</code>.</p>
+<div class="tablewrap"><table>
+  <thead><tr><th>Word</th><th>Means here</th><th>Also names</th><th>The fix</th></tr></thead>
+  <tbody>
+  <tr><td><b>script</b></td><td>The words he says in a take — the default meaning.</td><td>A Python file under <code>stages/*/scripts/</code> (eleven of them).</td><td>The second is always said <b>“python script”</b>. Not renamed.</td></tr>
+  <tr><td><b>hook</b></td><td>The after-edit hook in <code>.claude/hooks/</code> that runs <code>sync.py</code>.</td><td>The big text panel at the top of a reel, in the source specs.</td><td>Renamed: the panel is the <b>opener</b> (<code>EXCLUSIONS.md:37-38</code>) — and it's a deferred phase, do not build.</td></tr>
+  <tr><td><b>clip</b></td><td>One file off the phone, a few seconds long — invisible by the time the export arrives.</td><td>A stretch <code>01b_calibrate</code> found for itself by measuring.</td><td>Renamed: that's a <b>segment</b> (<code>edit-defaults.yaml:234,270</code>). “kept 3 of 14” is segments, not your clips.</td></tr>
+  <tr><td><b>render</b></td><td>The stage that burns subtitles on.</td><td>The finished file you post; also the <code>render:</code> block in the config — which nothing reads.</td><td>Not renamed, owner's call. “The render is wrong” is a symptom — the fault is upstream.</td></tr>
+  <tr><td><b>rule</b></td><td>A value under <code>rules:</code> in the config.</td><td>One of the four in <code>governance.md</code>; also what used to be written in <code>preferences.md</code>.</td><td>The third only is renamed: an <b>override</b> (<code>pipeline_lib.py:99</code>). Override beats config; governance beats everything.</td></tr>
+  <tr><td><b>animation</b></td><td>Nothing — the word is gone from the workspace on purpose.</td><td>The owner's separate, unstarted project of drawing visuals into videos.</td><td>The setting became <b><code>caption_motion</code></b> (<code>edit-defaults.yaml:33</code>) after “delete everything about animation” nearly took it out.</td></tr>
+  </tbody>
+</table></div>
+
+</main>
+
+<script>
+(function () {
+  var kind = 'all', stat = 'all';
+  var rows = document.querySelectorAll('#cat tbody tr');
+  var counter = document.getElementById('rowcount');
+
+  function apply() {
+    var shown = 0;
+    rows.forEach(function (r) {
+      var okK = kind === 'all' || r.dataset.k === kind;
+      var okS = stat === 'all' || r.dataset.s.split(' ').indexOf(stat) !== -1;
+      r.classList.toggle('hid', !(okK && okS));
+      if (okK && okS) shown++;
+    });
+    counter.textContent = shown + ' of ' + rows.length + ' rows shown';
+  }
+
+  function wire(id, set) {
+    var box = document.getElementById(id);
+    box.addEventListener('click', function (e) {
+      var b = e.target.closest('button');
+      if (!b) return;
+      box.querySelectorAll('button').forEach(function (x) { x.classList.remove('on'); });
+      b.classList.add('on');
+      set(b.dataset.f);
+      apply();
+    });
+  }
+  wire('kindf', function (v) { kind = v; });
+  wire('statf', function (v) { stat = v; });
+  apply();
+})();
+</script>
